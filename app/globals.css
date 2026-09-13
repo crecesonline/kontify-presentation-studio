@@ -66,7 +66,7 @@ button:disabled { cursor: not-allowed; opacity: .38; }
 .export-slide { width:1600px !important; height:900px !important; min-width:1600px; min-height:900px; }
 .export-menu { position:relative; }
 .export-options { display:none; position:absolute; right:0; top:calc(100% + 8px); z-index:10; min-width:190px; padding:6px; border:1px solid rgba(255,255,255,.12); border-radius:10px; background:#0b1b12; box-shadow:0 16px 40px rgba(0,0,0,.35); }
-.export-menu:hover .export-options, .export-menu:focus-within .export-options { display:grid; gap:3px; }
+.export-menu:hover .export-options, .export-menu:focus-within .export-options, .export-menu.open .export-options { display:grid; gap:3px; }.export-trigger { border-color:rgba(181,255,134,.42); color:var(--lime); }.export-error { position:absolute; right:0; top:calc(100% + 58px); z-index:11; width:250px; padding:10px 12px; border:1px solid rgba(255,126,126,.42); border-radius:8px; background:#281616; color:#ffb3b3; font-size:12px; line-height:1.35; }
 .export-options button { padding:9px 11px; border:0; border-radius:7px; background:transparent; color:#d8e2da; text-align:left; cursor:pointer; }
 .export-options button:hover:not(:disabled) { background:rgba(181,255,134,.12); color:#b5ff86; }
 .export-options button:disabled { opacity:.45; cursor:not-allowed; }

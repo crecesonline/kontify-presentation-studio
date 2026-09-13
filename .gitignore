@@ -15,3 +15,12 @@ node_modules
 .DS_Store
 .vercel
 .env*
+
+# Credentials and private keys
+*COOKIE_SECRET*
+*NEON*credential*
+*NEON*secret*
+*.pem
+*.key
+*.p12
+*.pfx

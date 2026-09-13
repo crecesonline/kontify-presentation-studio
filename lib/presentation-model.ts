@@ -13,7 +13,10 @@ export type SlideType =
 export type VisualType = 'hero_image' | 'diagram' | 'cards' | 'comparison' | 'big_number' | 'iconography' | 'typographic'
 export type VisualPlacement = 'background' | 'right' | 'left' | 'center' | 'none'
 
+import type { KontifyIconKey } from './kontify-icons'
+
 export type VisualStrategy = {
+  iconKey?: KontifyIconKey
   visualType: VisualType
   visualPrompt?: string
   visualPlacement: VisualPlacement
@@ -189,10 +192,13 @@ function makeTitle(topic: string) {
 
 function createVisualStrategy(type: SlideType, index: number, topic: string): VisualStrategy {
   const concept = topic.toLowerCase()
+  const fiscal = concept.includes('iva') || concept.includes('sat') || concept.includes('impuesto')
+  const iconKey = fiscal ? (type === 'decision' ? 'calculate' : type === 'comparison' ? 'compare' : type === 'action' ? 'review' : 'iva') : (type === 'decision' ? 'decide' : type === 'comparison' ? 'compare' : type === 'action' ? 'next_step' : type === 'figure' ? 'process' : 'idea')
   const heroConcepts = ['descubrimiento y tensión', 'consecuencia visible', 'acción y avance']
   if (type === 'cover' || type === 'reveal' || type === 'action') {
     const hero = heroConcepts[index === 0 ? 0 : index === 6 ? 1 : 2]
     return {
+      iconKey,
       visualType: 'hero_image',
       concept: `${hero} alrededor de ${concept}`,
       visualPrompt: `cinematic conceptual editorial scene representing ${hero} around ${concept}, dark near-black green environment, controlled lime illumination, premium business photography, clean composition, negative space for typography, no text, no logos, no people smiling at camera, no multicolor stock aesthetic`,
@@ -202,11 +208,11 @@ function createVisualStrategy(type: SlideType, index: number, topic: string): Vi
       visualPriority: 'primary',
     }
   }
-  if (type === 'comparison') return { visualType: 'comparison', concept: `contraste entre dos lecturas de ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
-  if (type === 'figure') return { visualType: 'diagram', concept: `secuencia visual para entender ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
-  if (type === 'decision') return { visualType: 'iconography', concept: `alternativas de decisión sobre ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
-  if (type === 'provocation') return { visualType: 'big_number', concept: `tensión principal de ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
-  if (type === 'cards') return { visualType: 'cards', concept: `mapa de ideas accionables sobre ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  if (type === 'comparison') return { iconKey, visualType: 'comparison', concept: `contraste entre dos lecturas de ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  if (type === 'figure') return { iconKey, visualType: 'diagram', concept: `secuencia visual para entender ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  if (type === 'decision') return { iconKey, visualType: 'iconography', concept: `alternativas de decisión sobre ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
+  if (type === 'provocation') return { iconKey, visualType: 'big_number', concept: `tensión principal de ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
+  if (type === 'cards') return { iconKey, visualType: 'cards', concept: `mapa de ideas accionables sobre ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
   return { visualType: 'typographic', concept: `idea esencial de ${concept}`, visualPlacement: 'none', textSafeArea: 'full', visualPriority: 'none' }
 }
 

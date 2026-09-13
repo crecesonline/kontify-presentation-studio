@@ -57,4 +57,12 @@ button:disabled { cursor: not-allowed; opacity: .38; }
 @media (max-width: 800px) { .kontify-visual-icon { right:7%; top:20%; width:54px; height:54px; } .kontify-visual-icon svg { width:25px; height:25px; } }
 .slide-canvas.slide-reveal .visual-direction { background:radial-gradient(circle at 48% 48%, rgba(181,255,134,.7), transparent 12%), radial-gradient(circle, rgba(38,105,62,.72), transparent 54%), #03100b; }
 .slide-canvas.slide-action .visual-direction { background:linear-gradient(145deg, rgba(181,255,134,.58), transparent 28%), radial-gradient(ellipse at 70% 80%, rgba(38,105,62,.8), transparent 52%), #03100b; }
+.export-surface { position:fixed; left:-20000px; top:0; width:1600px; pointer-events:none; }
+.export-slide { width:1600px !important; height:900px !important; min-width:1600px; min-height:900px; }
+.export-menu { position:relative; }
+.export-options { display:none; position:absolute; right:0; top:calc(100% + 8px); z-index:10; min-width:190px; padding:6px; border:1px solid rgba(255,255,255,.12); border-radius:10px; background:#0b1b12; box-shadow:0 16px 40px rgba(0,0,0,.35); }
+.export-menu:hover .export-options, .export-menu:focus-within .export-options { display:grid; gap:3px; }
+.export-options button { padding:9px 11px; border:0; border-radius:7px; background:transparent; color:#d8e2da; text-align:left; cursor:pointer; }
+.export-options button:hover:not(:disabled) { background:rgba(181,255,134,.12); color:#b5ff86; }
+.export-options button:disabled { opacity:.45; cursor:not-allowed; }
 @media (max-width: 800px) { .visual-direction { width:43%; height:70%; right:4%; top:16%; opacity:.55; } .slide-canvas .visual-direction + .slide-content { max-width:72%; } }

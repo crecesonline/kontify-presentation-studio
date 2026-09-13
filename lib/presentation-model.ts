@@ -11,11 +11,13 @@ export type SlideType =
   | "closing"
 
 export type VisualType = 'hero_image' | 'diagram' | 'cards' | 'comparison' | 'big_number' | 'iconography' | 'typographic'
+export type VisualLayout = 'hero' | 'big_number' | 'diagnostic_scale' | 'comparison' | 'process' | 'cause_effect' | 'decision_board' | 'number_breakdown' | 'risk_map' | 'checklist' | 'level_matrix' | 'traffic_light' | 'timeline' | 'before_after' | 'myth_reality' | 'find_error' | 'concept_map' | 'action_matrix' | 'reveal' | 'closing_decision'
 export type VisualPlacement = 'background' | 'right' | 'left' | 'center' | 'none'
 
 import type { KontifyIconKey } from './kontify-icons'
 
 export type VisualStrategy = {
+  layout: VisualLayout
   iconKey?: KontifyIconKey
   visualType: VisualType
   visualPrompt?: string
@@ -154,7 +156,7 @@ const baseSlides: Slide[] = [
   {
     id: "slide-10",
     type: "closing",
-    title: "No enseñamos para memorizar.\nEnseñamos para decidir mejor.",
+    title: "Utilidad no es efectivo.\nMira dónde está la diferencia.",
     items: [
       { label: "Las ventas", detail: "son una oportunidad." },
       { label: "La utilidad", detail: "es un resultado." },
@@ -172,7 +174,7 @@ export function createDemoPresentation(): Presentation {
     duration: "25 minutos",
     level: "Básico",
     objective: "Comprender utilidad vs. flujo y tomar mejores decisiones financieras.",
-    slides: baseSlides.map((slide) => ({ ...slide, items: slide.items?.map((item) => ({ ...item })) })),
+    slides: withArtDirection(baseSlides.map((slide) => ({ ...slide, items: slide.items?.map((item) => ({ ...item })) })), 'utilidad vs. flujo de efectivo'),
   }
 }
 
@@ -192,12 +194,15 @@ function makeTitle(topic: string) {
 
 function createVisualStrategy(type: SlideType, index: number, topic: string): VisualStrategy {
   const concept = topic.toLowerCase()
+  const layouts: VisualLayout[] = ['hero', 'big_number', 'comparison', 'process', 'number_breakdown', 'decision_board', 'reveal', 'checklist', 'action_matrix', 'closing_decision']
+  const layout = layouts[index % layouts.length]
   const fiscal = concept.includes('iva') || concept.includes('sat') || concept.includes('impuesto')
   const iconKey = fiscal ? (type === 'decision' ? 'calculate' : type === 'comparison' ? 'compare' : type === 'action' ? 'review' : 'iva') : (type === 'decision' ? 'decide' : type === 'comparison' ? 'compare' : type === 'action' ? 'next_step' : type === 'figure' ? 'process' : 'idea')
   const heroConcepts = ['descubrimiento y tensión', 'consecuencia visible', 'acción y avance']
   if (type === 'cover' || type === 'reveal' || type === 'action') {
     const hero = heroConcepts[index === 0 ? 0 : index === 6 ? 1 : 2]
     return {
+      layout,
       iconKey,
       visualType: 'hero_image',
       concept: `${hero} alrededor de ${concept}`,
@@ -208,12 +213,12 @@ function createVisualStrategy(type: SlideType, index: number, topic: string): Vi
       visualPriority: 'primary',
     }
   }
-  if (type === 'comparison') return { iconKey, visualType: 'comparison', concept: `contraste entre dos lecturas de ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
-  if (type === 'figure') return { iconKey, visualType: 'diagram', concept: `secuencia visual para entender ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
-  if (type === 'decision') return { iconKey, visualType: 'iconography', concept: `alternativas de decisión sobre ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
-  if (type === 'provocation') return { iconKey, visualType: 'big_number', concept: `tensión principal de ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
-  if (type === 'cards') return { iconKey, visualType: 'cards', concept: `mapa de ideas accionables sobre ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
-  return { visualType: 'typographic', concept: `idea esencial de ${concept}`, visualPlacement: 'none', textSafeArea: 'full', visualPriority: 'none' }
+  if (type === 'comparison') return { layout, iconKey, visualType: 'comparison', concept: `contraste entre dos lecturas de ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  if (type === 'figure') return { layout, iconKey, visualType: 'diagram', concept: `secuencia visual para entender ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  if (type === 'decision') return { layout, iconKey, visualType: 'iconography', concept: `alternativas de decisión sobre ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
+  if (type === 'provocation') return { layout, iconKey, visualType: 'big_number', concept: `tensión principal de ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
+  if (type === 'cards') return { layout, iconKey, visualType: 'cards', concept: `mapa de ideas accionables sobre ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  return { layout, visualType: 'typographic', concept: `idea esencial de ${concept}`, visualPlacement: 'none', textSafeArea: 'full', visualPriority: 'none' }
 }
 
 function isIvaTopic(topic: string) {
@@ -251,7 +256,7 @@ export function generatePresentation(input: Omit<Presentation, "id" | "slides">)
   const duration = clean(input.duration, '25 minutos')
   const subject = makeTitle(topic)
   const slides: Slide[] = [
-    { id: 'slide-1', type: 'cover', title: `${subject}\npara decidir mejor`, subtitle: `¿Qué cambia cuando ${topic.toLowerCase()} deja de ser una idea y se convierte en una decisión?`, speakerNotes: `Abre con la pregunta y pide a ${audience} que describa qué está en juego.` },
+    { id: 'slide-1', type: 'cover', title: `${subject}`, subtitle: `¿Qué cambia cuando ${topic.toLowerCase()} deja de ser una idea y se convierte en una decisión?`, speakerNotes: `Abre con la pregunta y pide a ${audience} que describa qué está en juego.` },
     { id: 'slide-2', type: 'provocation', title: 'La tensión que nadie puede ignorar', subtitle: `En ${topic.toLowerCase()}, saber más no siempre significa decidir mejor.`, body: `La pregunta clave: ¿qué estamos interpretando mal antes de actuar?`, speakerNotes: `Pide una respuesta rápida. No corrijas todavía: usa las respuestas para revelar el problema.` },
     { id: 'slide-3', type: 'problem', title: 'El costo de mirar solo una parte', subtitle: `Tres señales suelen confundirse cuando hablamos de ${topic.toLowerCase()}.`, items: [{ label: 'Lo visible', detail: 'Lo que parece urgente hoy.' }, { label: 'Lo importante', detail: 'La causa que mueve el resultado.' }, { label: 'Lo decisivo', detail: 'La acción que cambia el siguiente paso.' }], speakerNotes: 'Explica que el marco separa síntomas, causas y decisiones para evitar conclusiones rápidas.' },
     { id: 'slide-4', type: 'comparison', title: 'Dos formas de leer el mismo escenario', items: [{ label: 'Reacción', detail: 'Resolver lo que acaba de ocurrir.' }, { label: 'Criterio', detail: 'Entender el patrón y anticipar.' }], body: `Para ${audience}, el salto no es tener más información: es usarla con un criterio común.`, speakerNotes: 'Contrasta las dos miradas y conecta la segunda con el objetivo de la sesión.' },

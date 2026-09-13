@@ -40,7 +40,6 @@ export async function exportPresentationPptx(title: string) {
   pptx.subject = title
   pptx.title = title
   pptx.company = 'KONTIFY'
-  pptx.lang = 'es-MX'
   images.forEach((image) => { const slide = pptx.addSlide(); slide.background = { color: '03100B' }; slide.addImage({ data: image, x: 0, y: 0, w: 13.333, h: 7.5 }) })
   await pptx.writeFile({ fileName: `${title.replace(/[^a-z0-9áéíóúñü]+/gi, '-').replace(/^-|-$/g, '') || 'kontify-presentacion'}.pptx` })
 }

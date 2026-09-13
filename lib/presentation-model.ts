@@ -10,6 +10,19 @@ export type SlideType =
   | "action"
   | "closing"
 
+export type VisualType = 'hero_image' | 'diagram' | 'cards' | 'comparison' | 'big_number' | 'iconography' | 'typographic'
+export type VisualPlacement = 'background' | 'right' | 'left' | 'center' | 'none'
+
+export type VisualStrategy = {
+  visualType: VisualType
+  visualPrompt?: string
+  visualPlacement: VisualPlacement
+  textSafeArea: 'left' | 'right' | 'center' | 'full'
+  overlay?: 'dark_green_gradient' | 'none'
+  visualPriority: 'primary' | 'supporting' | 'none'
+  concept: string
+}
+
 export type Slide = {
   id: string
   type: SlideType
@@ -21,6 +34,8 @@ export type Slide = {
   items?: { label: string; value?: string; detail?: string }[]
   speakerNotes: string
   hypothetical?: boolean
+  visualStrategy?: VisualStrategy
+  visualAsset?: { src: string; alt: string }
 }
 
 export type Presentation = {
@@ -172,6 +187,29 @@ function makeTitle(topic: string) {
   return words.length > 7 ? `${words.slice(0, 6).join(' ')}…` : topic
 }
 
+function createVisualStrategy(type: SlideType, index: number, topic: string): VisualStrategy {
+  const concept = topic.toLowerCase()
+  const heroConcepts = ['descubrimiento y tensión', 'consecuencia visible', 'acción y avance']
+  if (type === 'cover' || type === 'reveal' || type === 'action') {
+    const hero = heroConcepts[index === 0 ? 0 : index === 6 ? 1 : 2]
+    return {
+      visualType: 'hero_image',
+      concept: `${hero} alrededor de ${concept}`,
+      visualPrompt: `cinematic conceptual editorial scene representing ${hero} around ${concept}, dark near-black green environment, controlled lime illumination, premium business photography, clean composition, negative space for typography, no text, no logos, no people smiling at camera, no multicolor stock aesthetic`,
+      visualPlacement: 'right',
+      textSafeArea: 'left',
+      overlay: 'dark_green_gradient',
+      visualPriority: 'primary',
+    }
+  }
+  if (type === 'comparison') return { visualType: 'comparison', concept: `contraste entre dos lecturas de ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  if (type === 'figure') return { visualType: 'diagram', concept: `secuencia visual para entender ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  if (type === 'decision') return { visualType: 'iconography', concept: `alternativas de decisión sobre ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
+  if (type === 'provocation') return { visualType: 'big_number', concept: `tensión principal de ${concept}`, visualPlacement: 'right', textSafeArea: 'left', visualPriority: 'supporting' }
+  if (type === 'cards') return { visualType: 'cards', concept: `mapa de ideas accionables sobre ${concept}`, visualPlacement: 'center', textSafeArea: 'full', visualPriority: 'supporting' }
+  return { visualType: 'typographic', concept: `idea esencial de ${concept}`, visualPlacement: 'none', textSafeArea: 'full', visualPriority: 'none' }
+}
+
 export function generatePresentation(input: Omit<Presentation, "id" | "slides">): Presentation {
   const topic = clean(input.title, 'el tema central')
   const audience = clean(input.audience, 'tu audiencia')
@@ -191,5 +229,5 @@ export function generatePresentation(input: Omit<Presentation, "id" | "slides">)
     { id: 'slide-9', type: 'action', title: 'Tu siguiente paso empieza hoy', subtitle: `En las próximas 24 horas, convierte ${topic.toLowerCase()} en una acción concreta.`, body: short(`Define qué observarás, qué decisión tomarás y cómo sabrás que avanzaste hacia: ${objective}.`, 190), speakerNotes: 'Da dos minutos para escribir la acción. Pide que incluya responsable, fecha y señal de avance.' },
     { id: 'slide-10', type: 'closing', title: 'Entender es el principio.\nDecidir es el resultado.', items: [{ label: 'Contexto', detail: `Nivel: ${level} · Duración: ${duration}` }, { label: 'Objetivo', detail: short(objective, 105) }, { label: 'Resultado', detail: 'Una decisión más clara y accionable.' }], speakerNotes: 'Cierra retomando la pregunta inicial y pide una frase: A partir de hoy voy a…' },
   ]
-  return { ...input, id: `presentation-${Date.now()}`, title: topic, audience, duration, level, objective, slides }
+  return { ...input, id: `presentation-${Date.now()}`, title: topic, audience, duration, level, objective, slides: slides.map((slide, index) => ({ ...slide, visualStrategy: createVisualStrategy(slide.type, index, topic) })) }
 }

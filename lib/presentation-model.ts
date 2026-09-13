@@ -179,12 +179,12 @@ function clean(value: string, fallback: string) {
 }
 
 function short(value: string, limit: number) {
-  return value.length > limit ? `${value.slice(0, limit - 1).trim()}…` : value
+  return value.length > limit ? value.slice(0, limit).trimEnd() : value
 }
 
 function makeTitle(topic: string) {
   const words = topic.split(' ')
-  return words.length > 7 ? `${words.slice(0, 6).join(' ')}…` : topic
+  return words.length > 7 ? words.slice(0, 7).join(' ') : topic
 }
 
 function createVisualStrategy(type: SlideType, index: number, topic: string): VisualStrategy {
@@ -210,7 +210,34 @@ function createVisualStrategy(type: SlideType, index: number, topic: string): Vi
   return { visualType: 'typographic', concept: `idea esencial de ${concept}`, visualPlacement: 'none', textSafeArea: 'full', visualPriority: 'none' }
 }
 
+function isIvaTopic(topic: string) {
+  const normalized = topic.toLowerCase()
+  return normalized.includes('iva') || normalized.includes('sat') || normalized.includes('impuesto al valor agregado')
+}
+
+function withArtDirection(slides: Slide[], topic: string) {
+  return slides.map((slide, index) => ({ ...slide, visualStrategy: createVisualStrategy(slide.type, index, topic) }))
+}
+
+function createIvaPresentation(input: Omit<Presentation, 'id' | 'slides'>): Presentation {
+  const topic = '¿El SAT se está quedando con tu IVA o tú lo estás calculando mal?'
+  const slides: Slide[] = [
+    { id: 'slide-1', type: 'cover', title: '¿EL SAT SE ESTÁ\nQUEDANDO CON TU IVA?', subtitle: '¿O lo estás calculando mal?', speakerNotes: 'Abre con la tensión entre el dinero que entra y el IVA que debe separarse. Aclara que la sesión es educativa y que los criterios fiscales actuales deben verificarse en fuentes oficiales.' },
+    { id: 'slide-2', type: 'provocation', title: 'COBRASTE MÁS\nDE LO QUE PUEDES GASTAR', subtitle: 'El IVA cobrado no es ingreso propio: es un importe trasladado que debe separarse.', items: [{ label: 'Cobro total', value: '$116,000' }, { label: 'Venta antes de IVA', value: '$100,000' }, { label: 'IVA trasladado', value: '$16,000' }], body: 'CASO HIPOTÉTICO · ¿Qué parte del cobro no deberías tratar como dinero disponible?', speakerNotes: 'Presenta las cantidades como un caso hipotético. No afirmes una obligación concreta sin revisar el periodo y la normativa aplicable.' , hypothetical: true },
+    { id: 'slide-3', type: 'comparison', title: 'TRES CANTIDADES\nQUE NO SIGNIFICAN LO MISMO', items: [{ label: 'Precio antes de IVA', detail: 'El valor de la operación antes del impuesto.' }, { label: 'IVA trasladado', detail: 'El impuesto cobrado al cliente en la operación.' }, { label: 'IVA acreditable', detail: 'El impuesto de compras que podría disminuir el IVA a cargo si cumple los requisitos aplicables.' }], body: 'Confundirlas hace que el saldo bancario parezca mayor de lo que realmente puedes disponer.', speakerNotes: 'Distingue cada concepto sin convertir la diapositiva en una asesoría fiscal. Marca que el acreditamiento depende de requisitos y debe verificarse oficialmente.' },
+    { id: 'slide-4', type: 'problem', title: 'EL ERROR NO ESTÁ\nEN LA CALCULADORA', subtitle: 'Está en tratar todo el cobro como ingreso propio.', accent: 'Confusión habitual', body: 'Si una venta es de $100,000 más $16,000 de IVA, el banco recibe $116,000, pero esos $16,000 deben identificarse por separado del precio de la venta.', speakerNotes: 'Pide que señalen qué importe usarían para calcular ventas y qué importe separarían como IVA trasladado. Caso hipotético, no regla universal.' , hypothetical: true },
+    { id: 'slide-5', type: 'figure', title: 'DEL COBRO AL IVA\nA CARGO INICIAL', subtitle: 'Cálculo simplificado de este caso hipotético, antes de otros ajustes aplicables.', items: [{ label: '1 · IVA trasladado', detail: '$16,000 cobrado a clientes.' }, { label: '2 · IVA acreditable hipotético', detail: '$9,600 de compras que suponemos acreditable para explicar el mecanismo.' }, { label: '3 · Diferencia inicial', detail: '$16,000 − $9,600 = $6,400.' }], body: 'La cifra es una ilustración pedagógica: verifica requisitos, periodo y reglas vigentes con una fuente oficial.', speakerNotes: 'Explica la resta paso a paso. Recalca que $6,400 es el resultado del caso hipotético, no una declaración fiscal ni una obligación automática.', hypothetical: true },
+    { id: 'slide-6', type: 'decision', title: 'AHORA DECIDE TÚ', subtitle: 'CASO HIPOTÉTICO · Tu negocio cobró $116,000 a sus clientes este mes.', items: [{ label: 'Venta antes de IVA', value: '$100,000' }, { label: 'IVA trasladado', value: '$16,000' }, { label: 'IVA acreditable hipotético', value: '$9,600' }], body: '¿Cuánto deberías considerar inicialmente como IVA a cargo, antes de otros ajustes aplicables?\n\nA) $16,000    B) $6,400    C) $9,600', speakerNotes: 'Da tiempo para elegir. La respuesta del ejemplo es B: $6,400, calculado como $16,000 menos $9,600. No presentes esto como cálculo fiscal completo.', hypothetical: true },
+    { id: 'slide-7', type: 'reveal', title: 'LA RESPUESTA DEL CASO\nES B) $6,400', subtitle: '$16,000 de IVA trasladado − $9,600 de IVA acreditable hipotético = $6,400.', body: 'La lógica separa el IVA cobrado del precio de venta y después muestra la resta del ejemplo. Otros ajustes y requisitos pueden cambiar el resultado aplicable.', speakerNotes: 'Revela la operación y vuelve a nombrar cada importe. Indica que una persona especialista debe validar el cálculo real y la normativa vigente.', hypothetical: true },
+    { id: 'slide-8', type: 'cards', title: 'CÓMO EVITAR\nLA CONFUSIÓN', items: [{ label: 'Separa', detail: 'Registra el IVA trasladado fuera del ingreso propio.' }, { label: 'Identifica', detail: 'Distingue compras y el IVA acreditable hipotético.' }, { label: 'Revisa', detail: 'Comprueba requisitos y periodo antes de concluir.' }, { label: 'Protege', detail: 'No gastes el IVA cobrado como si fuera margen.' }], speakerNotes: 'Convierte el aprendizaje en una rutina de revisión. Evita afirmar obligaciones que no estén verificadas oficialmente.' },
+    { id: 'slide-9', type: 'action', title: 'ACTÚA ANTES\nDE PRESENTAR', subtitle: 'Construye una conciliación simple del periodo.', body: 'Separa ventas antes de IVA, IVA trasladado e IVA de compras. Después marca qué importes requieren verificación oficial antes de usarlos en una declaración.', speakerNotes: 'Pide que definan una acción concreta para su siguiente cierre. La acción es de control interno, no una instrucción fiscal personalizada.' },
+    { id: 'slide-10', type: 'closing', title: 'EL IVA COBRADO\nNO ES TODO TUYO', items: [{ label: 'Entiende', detail: 'Precio antes de IVA no es lo mismo que cobro total.' }, { label: 'Calcula', detail: 'Trasladado menos acreditable hipotético explica este caso.' }, { label: 'Verifica', detail: 'La aplicación real requiere revisar fuentes oficiales.' }], speakerNotes: 'Cierra con la diferencia entre cobro, ingreso propio y cálculo ilustrativo. Pide que la audiencia repita qué dato separará en su próximo cierre.' },
+  ]
+  return { ...input, id: `presentation-${Date.now()}`, title: topic, objective: input.objective || 'Comprender el IVA trasladado, el IVA acreditable y su efecto en el flujo de efectivo.', slides: withArtDirection(slides, topic) }
+}
+
 export function generatePresentation(input: Omit<Presentation, "id" | "slides">): Presentation {
+  if (isIvaTopic(input.title)) return createIvaPresentation(input)
   const topic = clean(input.title, 'el tema central')
   const audience = clean(input.audience, 'tu audiencia')
   const objective = clean(input.objective, `entender ${topic} y actuar con claridad`)

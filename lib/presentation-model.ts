@@ -158,19 +158,38 @@ export function createDemoPresentation(): Presentation {
   }
 }
 
+function clean(value: string, fallback: string) {
+  const result = value.trim().replace(/\s+/g, ' ').replace(/[.!?]+$/, '')
+  return result || fallback
+}
+
+function short(value: string, limit: number) {
+  return value.length > limit ? `${value.slice(0, limit - 1).trim()}…` : value
+}
+
+function makeTitle(topic: string) {
+  const words = topic.split(' ')
+  return words.length > 7 ? `${words.slice(0, 6).join(' ')}…` : topic
+}
+
 export function generatePresentation(input: Omit<Presentation, "id" | "slides">): Presentation {
-  const demo = createDemoPresentation()
-  const topic = input.title.trim() || demo.title
-  if (topic.toLowerCase().includes("dinero") || topic.toLowerCase().includes("flujo")) {
-    return { ...demo, ...input, id: `presentation-${Date.now()}` }
-  }
-  return {
-    ...demo,
-    ...input,
-    id: `presentation-${Date.now()}`,
-    title: topic,
-    slides: demo.slides.map((slide, index) => index === 0
-      ? { ...slide, title: `${topic}\npara decidir mejor`, subtitle: input.objective }
-      : slide),
-  }
+  const topic = clean(input.title, 'el tema central')
+  const audience = clean(input.audience, 'tu audiencia')
+  const objective = clean(input.objective, `entender ${topic} y actuar con claridad`)
+  const level = clean(input.level, 'Básico')
+  const duration = clean(input.duration, '25 minutos')
+  const subject = makeTitle(topic)
+  const slides: Slide[] = [
+    { id: 'slide-1', type: 'cover', title: `${subject}\npara decidir mejor`, subtitle: `¿Qué cambia cuando ${topic.toLowerCase()} deja de ser una idea y se convierte en una decisión?`, speakerNotes: `Abre con la pregunta y pide a ${audience} que describa qué está en juego.` },
+    { id: 'slide-2', type: 'provocation', title: 'La tensión que nadie puede ignorar', subtitle: `En ${topic.toLowerCase()}, saber más no siempre significa decidir mejor.`, body: `La pregunta clave: ¿qué estamos interpretando mal antes de actuar?`, speakerNotes: `Pide una respuesta rápida. No corrijas todavía: usa las respuestas para revelar el problema.` },
+    { id: 'slide-3', type: 'problem', title: 'El costo de mirar solo una parte', subtitle: `Tres señales suelen confundirse cuando hablamos de ${topic.toLowerCase()}.`, items: [{ label: 'Lo visible', detail: 'Lo que parece urgente hoy.' }, { label: 'Lo importante', detail: 'La causa que mueve el resultado.' }, { label: 'Lo decisivo', detail: 'La acción que cambia el siguiente paso.' }], speakerNotes: 'Explica que el marco separa síntomas, causas y decisiones para evitar conclusiones rápidas.' },
+    { id: 'slide-4', type: 'comparison', title: 'Dos formas de leer el mismo escenario', items: [{ label: 'Reacción', detail: 'Resolver lo que acaba de ocurrir.' }, { label: 'Criterio', detail: 'Entender el patrón y anticipar.' }], body: `Para ${audience}, el salto no es tener más información: es usarla con un criterio común.`, speakerNotes: 'Contrasta las dos miradas y conecta la segunda con el objetivo de la sesión.' },
+    { id: 'slide-5', type: 'figure', title: 'El marco en tres movimientos', subtitle: `Una ruta simple para trabajar ${topic.toLowerCase()}.`, items: [{ label: '1. Observa', detail: 'Nombra el hecho sin interpretarlo.' }, { label: '2. Explica', detail: 'Encuentra la relación que importa.' }, { label: '3. Decide', detail: 'Elige una acción verificable.' }], speakerNotes: 'Recorre el marco con un ejemplo de la audiencia y confirma que cada paso produce una salida distinta.' },
+    { id: 'slide-6', type: 'decision', title: 'Ahora llevémoslo a la práctica', subtitle: `Caso de trabajo: aplicar el criterio a ${topic.toLowerCase()}.`, items: [{ label: 'Contexto', value: short(`Una situación real de ${audience}`, 42) }, { label: 'Reto', value: 'Elegir qué atender primero' }, { label: 'Criterio', value: 'Impacto y capacidad de acción' }], body: 'A. Mantener el plan  B. Ajustar el enfoque  C. Detener y volver a diagnosticar', speakerNotes: 'Pide que elijan una opción y justifiquen su decisión con evidencia, no con intuición.', hypothetical: true },
+    { id: 'slide-7', type: 'reveal', title: 'La decisión mejora cuando el criterio es explícito', subtitle: `El objetivo no es predecir todo: es reducir la ambigüedad antes de actuar.`, body: short(`Por eso la respuesta más sólida para ${topic.toLowerCase()} combina contexto, evidencia y un siguiente paso observable.`, 180), speakerNotes: 'Revela el criterio y vuelve al caso. Pregunta qué dato faltaba para decidir con confianza.' },
+    { id: 'slide-8', type: 'cards', title: 'Lo que debes llevarte', items: [{ label: 'Una idea', detail: short(`La clave de ${topic.toLowerCase()} es mirar el sistema completo.`, 85) }, { label: 'Un criterio', detail: 'Prioriza lo que cambia la decisión.' }, { label: 'Una práctica', detail: 'Convierte el análisis en un siguiente paso.' }, { label: 'Una señal', detail: 'Mide si la acción produjo el efecto esperado.' }], speakerNotes: 'Pide a cada persona que elija la tarjeta más útil para su contexto.' },
+    { id: 'slide-9', type: 'action', title: 'Tu siguiente paso empieza hoy', subtitle: `En las próximas 24 horas, convierte ${topic.toLowerCase()} en una acción concreta.`, body: short(`Define qué observarás, qué decisión tomarás y cómo sabrás que avanzaste hacia: ${objective}.`, 190), speakerNotes: 'Da dos minutos para escribir la acción. Pide que incluya responsable, fecha y señal de avance.' },
+    { id: 'slide-10', type: 'closing', title: 'Entender es el principio.\nDecidir es el resultado.', items: [{ label: 'Contexto', detail: `Nivel: ${level} · Duración: ${duration}` }, { label: 'Objetivo', detail: short(objective, 105) }, { label: 'Resultado', detail: 'Una decisión más clara y accionable.' }], speakerNotes: 'Cierra retomando la pregunta inicial y pide una frase: A partir de hoy voy a…' },
+  ]
+  return { ...input, id: `presentation-${Date.now()}`, title: topic, audience, duration, level, objective, slides }
 }

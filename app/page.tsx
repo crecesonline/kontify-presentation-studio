@@ -4,14 +4,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, Copy, MoreHorizontal, Play, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
 import { createDemoPresentation, generatePresentation, type Presentation, type Slide } from '@/lib/presentation-model'
 import { authClient } from '@/lib/neon-auth-client'
+import { KontifyLogo } from '@/components/kontify-logo'
 
-const logoUrl = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/file_00000000eefc81f5aec0fd09bf3af805-QDMuz8Ij7X0qijTsQ4INm3Nbft4kT0.png'
-
-function Brand() { return <div className="brand"><img src={logoUrl} alt="Kontify" /><span>Presentation Studio</span></div> }
+function Brand() { return <div className="brand"><KontifyLogo /><span>Presentation Studio</span></div> }
 
 function SlideCanvas({ slide, number, presenting = false }: { slide: Slide; number: number; presenting?: boolean }) {
   return <div className={`slide-canvas slide-${slide.type} ${presenting ? 'presenting' : ''}`}>
-    <div className="slide-top"><img src={logoUrl} alt="Kontify" /><span>{String(number).padStart(2, '0')}</span></div>
+    <div className="slide-top"><KontifyLogo /><span>{String(number).padStart(2, '0')}</span></div>
     <div className="slide-content">{slide.type === 'provocation' && <div className="eyebrow">CONFRONTA</div>}<h1>{slide.title.split('\n').map((part, i) => <span key={`${part}-${i}`}>{part}{i < slide.title.split('\n').length - 1 && <br />}</span>)}</h1>{slide.subtitle && <p className="slide-subtitle">{slide.subtitle}</p>}{slide.items && <div className={`slide-items items-${Math.min(slide.items.length, 5)}`}>{slide.items.map((item, i) => <div className="slide-item" key={`${item.label}-${i}`}><div className="item-index">{slide.type === 'cards' && slide.items!.length === 4 ? i + 1 : ''}</div><strong>{item.value || item.label}</strong>{item.value && <span>{item.label}</span>}{item.detail && <small>{item.detail}</small>}</div>)}</div>}{slide.body && <div className="slide-body">{slide.accent && <b>{slide.accent} </b>}{slide.body}</div>}{slide.type === 'reveal' && <div className="reveal-orb" aria-hidden="true" />}</div>
     <div className="slide-footer">KONTIFY ACADEMY <span>Decisiones con Claridad</span></div>{slide.hypothetical && <div className="hypothetical">CASO HIPOTÉTICO</div>}
   </div>

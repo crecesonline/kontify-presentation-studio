@@ -16,20 +16,35 @@ async function captureSlides(selector = '.export-slide') {
   }))
 }
 
+function safeFilename(title: string, extension: string) {
+  return `${title.replace(/[^a-z0-9áéíóúñü]+/gi, '-').replace(/^-|-$/g, '') || 'kontify-presentacion'}.${extension}`
+}
+
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
   anchor.download = filename
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
   anchor.click()
-  URL.revokeObjectURL(url)
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+async function writePptxBlob(pptx: pptxgen, filename: string) {
+  const output = await pptx.write({ outputType: 'blob' })
+  if (!(output instanceof Blob) || output.size < 1000) throw new Error('PowerPoint no generó un paquete Open XML válido.')
+  const header = new Uint8Array(await output.slice(0, 4).arrayBuffer())
+  if (header[0] !== 0x50 || header[1] !== 0x4b || header[2] !== 0x03 || header[3] !== 0x04) throw new Error('El archivo PowerPoint no es un ZIP Open XML válido.')
+  downloadBlob(output, filename)
 }
 
 export async function exportPresentationPdf(title: string) {
   const images = await captureSlides()
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [WIDTH, HEIGHT], compress: true })
   images.forEach((image, index) => { if (index) pdf.addPage([WIDTH, HEIGHT], 'landscape'); pdf.addImage(image, 'PNG', 0, 0, WIDTH, HEIGHT, undefined, 'FAST') })
-  pdf.save(`${title.replace(/[^a-z0-9áéíóúñü]+/gi, '-').replace(/^-|-$/g, '') || 'kontify-presentacion'}.pdf`)
+  pdf.save(safeFilename(title, 'pdf'))
 }
 
 export async function exportPresentationPptx(title: string) {
@@ -41,7 +56,7 @@ export async function exportPresentationPptx(title: string) {
   pptx.title = title
   pptx.company = 'KONTIFY'
   images.forEach((image) => { const slide = pptx.addSlide(); slide.background = { color: '03100B' }; slide.addImage({ data: image, x: 0, y: 0, w: 13.333, h: 7.5 }) })
-  await pptx.writeFile({ fileName: `${title.replace(/[^a-z0-9áéíóúñü]+/gi, '-').replace(/^-|-$/g, '') || 'kontify-presentacion'}.pptx` })
+  await writePptxBlob(pptx, safeFilename(title, 'pptx'))
 }
 
 export function exportLimitations() {

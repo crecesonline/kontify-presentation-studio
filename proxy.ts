@@ -1,6 +1,5 @@
 import { neonAuth } from '@/lib/neon-auth'
 
-export const runtime = 'nodejs'
 
 export default neonAuth.middleware({ loginUrl: '/auth/sign-in' })
 
